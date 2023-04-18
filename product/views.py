@@ -168,16 +168,11 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 class UserAllInquiry(APIView):
     permission_classes=[permissions.IsAuthenticated]
-    def get_object(self,pk):
-        try:
-            user=CustomUser.objects.get(pk=pk)
-            return user
-        except CustomUser.DoesNotExist:
-            raise Http404
+    
 
-    def get(self,request,pk):
-        user=self.get_object(pk)
-        if user== self.request.user:
+    def get(self,request):
+        user=request.user
+        if user == self.request.user:
             inquiries=Inquiry.objects.filter(product__owner=user)
             if inquiries:
                 serializer=InquirySerializer(inquiries,many=True)
