@@ -3,9 +3,10 @@ from .models import Products,Category,Inquiry
 class ProductSerializer(serializers.ModelSerializer):
     is_active=serializers.BooleanField(default=True)
     owner=serializers.CharField(read_only=True)
+    no_of_inquiries=serializers.CharField(read_only=True)
     class Meta:
         model=Products
-        fields=['name','owner','id','brand','description','price','category','state','city','condition','image_1','status','is_active']
+        fields=['name','owner','id','brand','description','price','category','state','city','condition','image_1','status','is_active','no_of_inquiries']
 
 class CategorySerializer(serializers.ModelSerializer):
     category_name=serializers.CharField(required=True)

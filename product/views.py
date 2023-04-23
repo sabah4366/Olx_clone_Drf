@@ -2,7 +2,7 @@
 from rest_framework.views import APIView
 from .serializers import ProductSerializer,CategorySerializer,InquirySerializer
 from rest_framework.response import Response
-from rest_framework import status,permissions
+from rest_framework import status,permissions,authentication
 from rest_framework.permissions import IsAuthenticated
 from .models import Products,Category,Inquiry
 from django.http import Http404
@@ -11,6 +11,7 @@ from rest_framework import viewsets, filters
 from rest_framework import viewsets
 from rest_framework.parsers import JSONParser
 from user.models import CustomUser
+from rest_framework.authtoken.views import Token,ObtainAuthToken,AuthTokenSerializer
 
 
 class CategoryView(APIView):
@@ -32,6 +33,7 @@ class CategoryListView(APIView):
 
 
 class ProductListView(APIView):
+    authentication_classes=[authentication.TokenAuthentication]
     permission_classes=[permissions.IsAuthenticated]
 
     def get(self,request,format=None):

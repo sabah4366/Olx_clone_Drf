@@ -40,6 +40,15 @@ class Products(models.Model):
     updated=models.DateTimeField(auto_now=True)
     is_active=models.BooleanField(default=True)
 
+
+    @property
+    def no_of_inquiries(self):
+        inqiries=self.inquiry_set.all().values_list('message',flat=True)
+        if inqiries:
+            total=len(inqiries)
+            return total
+        return 0
+
     def two_month_register(self):
         two_month=timezone.now()-timezone.timedelta(days=60)
         if self.created == None:
