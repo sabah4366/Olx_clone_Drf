@@ -6,9 +6,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
     password=serializers.CharField(write_only=True,required=True)
     password2=serializers.CharField(required=True,write_only=True)
     email=serializers.CharField(required=True)
+    followers=serializers.CharField(read_only=True)
+    following=serializers.CharField(read_only=True)
+
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'phone_number', 'image','password','password2')
+        fields = ('id', 'username', 'email', 'phone_number', 'image','password','password2','followers','following')
 
 
 

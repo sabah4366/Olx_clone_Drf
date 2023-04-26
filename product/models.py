@@ -39,8 +39,14 @@ class Products(models.Model):
     created=models.DateTimeField(auto_now_add=True)
     updated=models.DateTimeField(auto_now=True)
     is_active=models.BooleanField(default=True)
+    likedby=models.ManyToManyField(CustomUser,related_name='likes')
 
 
+    @property
+    def no_of_likes(self):
+        count=self.likedby.all()
+        return len(count)
+        
     @property
     def no_of_inquiries(self):
         inqiries=self.inquiry_set.all().values_list('message',flat=True)
@@ -48,6 +54,7 @@ class Products(models.Model):
             total=len(inqiries)
             return total
         return 0
+
 
     def two_month_register(self):
         two_month=timezone.now()-timezone.timedelta(days=60)
@@ -57,9 +64,7 @@ class Products(models.Model):
 
     
     
-    def save(self,*args,**kwargs):
-        
-        
+    def save(self,*args,**kwargs):   
         if self.two_month_register():
             self.is_active=False
         return super(Products,self).save(*args,**kwargs)

@@ -18,5 +18,6 @@ urlpatterns = [
     path('product/<int:pk>/message/',views.InquiryView.as_view()),
     path('product/inquiries/',views.InquiryView.as_view()),
     path('product/inquiry/<int:pk>/',views.delete_inquiry),
-    path('user/inquiries/',views.UserAllInquiry.as_view())
+    path('user/inquiries/',views.UserAllInquiry.as_view()),
+    path('product/<int:pk>/liked/',views.AddLikeView.as_view())
 ]

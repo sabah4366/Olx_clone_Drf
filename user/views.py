@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import CustomUserSerializer
 from .models import CustomUser
+from django.http import Http404
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -35,3 +36,22 @@ class CustomAuthToken(ObtainAuthToken):
             'user_name': user.username,
             'email': user.email
         })
+
+class AddFollower(APIView):
+
+    def post(self,request,pk):
+        try:
+            user=CustomUser.objects.get(pk=pk)
+        except CustomUser.DoesNotExist:
+            raise Http404
+        if user != request.user:
+            if user.follower.filter(id=request.user.id):
+                user.follower.remove(request.user)
+                user.save()
+                return Response(data=f"you are unfollowed by-{user}")
+            else:
+                user.follower.add(request.user)
+                user.save()
+                return Response(data=f"you are followed by-{user}")
+        else:
+            return Response(data="you are logined user and also as a follower user")

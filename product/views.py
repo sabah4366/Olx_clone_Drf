@@ -6,7 +6,7 @@ from rest_framework import status,permissions,authentication
 from rest_framework.permissions import IsAuthenticated
 from .models import Products,Category,Inquiry
 from django.http import Http404
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view,permission_classes,action
 from rest_framework import viewsets, filters
 from rest_framework import viewsets
 from rest_framework.parsers import JSONParser
@@ -38,6 +38,7 @@ class ProductListView(APIView):
 
     def get(self,request,format=None):
         products=Products.objects.all()
+        
         serializer=ProductSerializer(products,many=True)
         return Response(data=serializer.data,status=status.HTTP_200_OK)
 
@@ -183,4 +184,18 @@ class UserAllInquiry(APIView):
                 return Response("No inquiries",status=status.HTTP_200_OK)
         else:
             return Response("You have no permission")
-       
+
+class AddLikeView(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def post(self,request,pk):
+        try:
+            product=Products.objects.get(pk=pk)
+        except Products.DoesNotExist:
+            raise Http404
+        user=self.request.user
+        if product.likedby.filter(id=user.id).exists():
+            product.likedby.remove(user)
+            return Response(data="unliked")
+        else:
+            product.likedby.add(user)
+            return Response(data="liked")

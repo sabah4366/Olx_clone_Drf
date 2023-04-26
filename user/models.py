@@ -9,6 +9,8 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15)
     image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     groups = models.ManyToManyField(Group, blank=True, related_name='customuser_set')
+    follower=models.ManyToManyField('self',symmetrical=False,related_name="follow")
+
     user_permissions = models.ManyToManyField(
         Permission,
         blank=True,
@@ -16,6 +18,20 @@ class CustomUser(AbstractUser):
         help_text=('Specific permissions for this user.'),
         verbose_name=('user permissions'),
     )
+
+    @property
+    def followers(self):
+        count=self.follower.all()
+        return len(count)
+
+
+
+    @property
+    def following(self):
+        user=CustomUser.objects.get(pk=self.pk)
+        count=CustomUser.objects.filter(follower=user)
+
+        return len(count)
 
 
 
