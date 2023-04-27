@@ -7,7 +7,7 @@ class ProductSerializer(serializers.ModelSerializer):
     no_of_likes=serializers.CharField(read_only=True)
     class Meta:
         model=Products
-        fields=['name','owner','id','brand','description','price','category','state','city','condition','image_1','status','is_active','no_of_likes','no_of_inquiries']
+        fields=['name','owner','id','brand','description','price','category','state','city','condition','image','status','is_active','no_of_likes','no_of_inquiries']
 
 class CategorySerializer(serializers.ModelSerializer):
     category_name=serializers.CharField(required=True)

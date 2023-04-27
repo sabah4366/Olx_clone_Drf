@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 
 class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15)
-    image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    image = models.ImageField(upload_to='photos/profile_images', blank=True, null=True)
     groups = models.ManyToManyField(Group, blank=True, related_name='customuser_set')
     follower=models.ManyToManyField('self',symmetrical=False,related_name="follow")
 

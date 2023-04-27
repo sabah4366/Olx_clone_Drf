@@ -34,7 +34,7 @@ class Products(models.Model):
     state=models.CharField(max_length=200)
     city=models.CharField(max_length=150)
     condition=models.CharField(max_length=200,choices=CONDITION_TYPE)
-    image_1=models.ImageField(upload_to='main_product',blank=False,null=False)
+    image=models.ImageField(upload_to='photos/product_images',blank=False,null=False)
     status=models.CharField(max_length=200,choices=OPTIONAL,default='for-sale')
     created=models.DateTimeField(auto_now_add=True)
     updated=models.DateTimeField(auto_now=True)

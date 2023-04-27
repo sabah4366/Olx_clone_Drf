@@ -16,6 +16,7 @@ from rest_framework.authtoken.views import Token,ObtainAuthToken,AuthTokenSerial
 
 class CategoryView(APIView):
     permission_classes=[permissions.IsAdminUser]
+    authentication_classes=[authentication.BasicAuthentication]
     def post(self,request,*args,**kwargs):
         serializer=CategorySerializer(data=request.data)
         if serializer.is_valid():
@@ -77,8 +78,8 @@ class ProductDetailView(APIView):
     def patch(self,request,pk,format=None):
         instance=self.get_object(pk)
         if instance.owner.id == request.user.id:
-            if 'owner' in request.data:
-                return Response({'error':'cannot change your username'},status=status.HTTP_400_BAD_REQUEST)
+            if 'owner' or 'id' in request.data:
+                return Response({'error':'cannot change your username and id'},status=status.HTTP_400_BAD_REQUEST)
             serializer=ProductSerializer(instance,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()

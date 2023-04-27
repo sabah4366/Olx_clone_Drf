@@ -11,21 +11,39 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'username', 'email', 'phone_number', 'image','password','password2','followers','following')
+        fields = ('id', 'username', 'email', 'phone_number', 'first_name','last_name','image','password','password2','followers','following')
 
 
-
+    
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"error": "Password fields didn't match."})
-        return attrs
+        email=attrs['email']
+        phone_number=attrs['phone_number']
+        if CustomUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"error":'email already exists'})
+
+        if CustomUser.objects.filter(phone_number=phone_number).exists():
+             raise serializers.ValidationError({"error":'phone number already exists'})
+           
+        if attrs['password'] and ['password2']:
+            if attrs['password'] != attrs['password2']:
+                raise serializers.ValidationError({"error": "Password fields didn't match."})
+            return attrs
 
     def create(self, validated_data):
-        user = CustomUser.objects.create(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            phone_number=validated_data['phone_number'],
-        )        
-        user.set_password(validated_data['password'])
+        # the pop() method is used to retrieve the value of the 'password' key from the validated_data dictionary and remove it from the dictionary. 
+        password = validated_data.pop('password')
+        password2 = validated_data.pop('password2')
+        if password != password2:
+            raise serializers.ValidationError('Passwords do not match')
+        user = CustomUserSerializer(**validated_data)
+        # set_password() method will hash the password before saving password into database
+        user.set_password(password)
         user.save()
-        return  user
+        return user
+
+class UserUpdateSeerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CustomUser
+        fields= ('id', 'username', 'email', 'phone_number', 'first_name','last_name','image')
+
+             
