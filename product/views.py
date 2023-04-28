@@ -11,7 +11,9 @@ from rest_framework import viewsets, filters
 from rest_framework import viewsets
 from rest_framework.parsers import JSONParser
 from user.models import CustomUser
-from rest_framework.authtoken.views import Token,ObtainAuthToken,AuthTokenSerializer
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
 
 
 class CategoryView(APIView):
@@ -38,8 +40,7 @@ class ProductListView(APIView):
     permission_classes=[permissions.IsAuthenticated]
 
     def get(self,request,format=None):
-        products=Products.objects.all()
-        
+        products=Products.objects.all().exclude(status='sold')
         serializer=ProductSerializer(products,many=True)
         return Response(data=serializer.data,status=status.HTTP_200_OK)
 
@@ -78,8 +79,10 @@ class ProductDetailView(APIView):
     def patch(self,request,pk,format=None):
         instance=self.get_object(pk)
         if instance.owner.id == request.user.id:
-            if 'owner' or 'id' in request.data:
-                return Response({'error':'cannot change your username and id'},status=status.HTTP_400_BAD_REQUEST)
+            if 'owner' in request.data:
+                return Response({'error':'cannot change your username'},status=status.HTTP_400_BAD_REQUEST)
+            if 'id' in request.data:
+                return Response({'error':'cannot change your id'},status=status.HTTP_400_BAD_REQUEST)
             serializer=ProductSerializer(instance,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -120,7 +123,7 @@ class InquiryView(APIView):
             else:
                 return Response(data="You are not the product owner so you cant see their inquiries")
         else:
-            return Response("No inquiries")
+            return Response("No inquiries",status=status.HTTP_200_OK)
 
 
     def post(self,request,pk):
@@ -143,9 +146,9 @@ def delete_inquiry(request,pk):
     user=request.user
     if user==inquiry.user:
         inquiry.delete()
-        return Response(data="Inquiry deleted")
+        return Response(data="Inquiry deleted",status=status.HTTP_200_OK)
     else:
-        return Response("You have no permission to delete this inquiry")
+        return Response("permission denied",status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -163,17 +166,26 @@ class UserProductsView(APIView):
 
 #for searching 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Products.objects.all()
     permission_classes=[IsAuthenticated]
     serializer_class = ProductSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', 'brand']
 
-
-class UserAllInquiry(APIView):
-    permission_classes=[permissions.IsAuthenticated]
+    def get_queryset(self):
+        queryset=Products.objects.all()
+        search_query=self.request.query_params.get('search',None)
+        if search_query is not None:
+            queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(brand__icontains=search_query) 
+                )
+        return queryset
+        
     
 
+    
+class UserAllInquiry(APIView):
+    permission_classes=[permissions.IsAuthenticated]
     def get(self,request):
         user=request.user
         if user == self.request.user:
@@ -184,7 +196,7 @@ class UserAllInquiry(APIView):
             else:
                 return Response("No inquiries",status=status.HTTP_200_OK)
         else:
-            return Response("You have no permission")
+            return Response("permission denied ",status=status.HTTP_400_BAD_REQUEST)
 
 class AddLikeView(APIView):
     permission_classes=[permissions.IsAuthenticated]
@@ -196,7 +208,29 @@ class AddLikeView(APIView):
         user=self.request.user
         if product.likedby.filter(id=user.id).exists():
             product.likedby.remove(user)
-            return Response(data="unliked")
+            return Response(data="unliked",status=status.HTTP_200_OK)
         else:
             product.likedby.add(user)
-            return Response(data="liked")
+            return Response(data="liked",status=status.HTTP_200_OK)
+
+
+class UserProductStatus(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def get(self,request,pk):
+        print(request)
+        product=get_object_or_404(Products ,pk=pk)
+        if product.owner == self.request.user:
+            Products.objects.filter(pk=pk).update(status='sold')
+            return Response(data='product sold',status=status.HTTP_200_OK)
+        else:
+            return Response(data={"error":"permission denied"},status=status.HTTP_400_BAD_REQUEST)
+        
+class CategoryBasedProducts(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def get(self,request,pk):
+        products=Products.objects.filter(category=pk)
+        if products:
+            serialiser=ProductSerializer(products,many=True)
+            return Response(data=serialiser.data,status=status.HTTP_200_OK)
+        else:
+            return Response(data="No products based on category",status=status.HTTP_200_OK)
