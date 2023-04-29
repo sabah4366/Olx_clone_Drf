@@ -217,7 +217,6 @@ class AddLikeView(APIView):
 class UserProductStatus(APIView):
     permission_classes=[permissions.IsAuthenticated]
     def get(self,request,pk):
-        print(request)
         product=get_object_or_404(Products ,pk=pk)
         if product.owner == self.request.user:
             Products.objects.filter(pk=pk).update(status='sold')
@@ -234,3 +233,11 @@ class CategoryBasedProducts(APIView):
             return Response(data=serialiser.data,status=status.HTTP_200_OK)
         else:
             return Response(data="No products based on category",status=status.HTTP_200_OK)
+
+class OtherUsersProducts(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def get(self,request,pk):
+        user=get_object_or_404(CustomUser,pk=pk)
+        products=Products.objects.filter(owner=user)
+        serializer=ProductSerializer(products ,many=True)
+        return Response(data=serializer.data,status=status.HTTP_200_OK)

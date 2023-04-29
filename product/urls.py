@@ -7,7 +7,7 @@ from rest_framework import routers
 
 
 router = routers.DefaultRouter()
-router.register(r'searchproducts', ProductViewSet,basename='search')
+router.register(r'searchproducts', ProductViewSet,basename='searchproducts')
 urlpatterns = [
     path('', include(router.urls)),
     path('users/products/',views.UserProductsView.as_view()),
@@ -21,5 +21,6 @@ urlpatterns = [
     path('product/inquiry/<int:pk>/',views.delete_inquiry),
     path('user/inquiries/',views.UserAllInquiry.as_view()),
     path('product/<int:pk>/liked/',views.AddLikeView.as_view()),
-    path('user/<int:pk>/product/',views.UserProductStatus.as_view())
+    path('user/<int:pk>/product/',views.UserProductStatus.as_view()),
+    path('user/<int:pk>/products/',views.OtherUsersProducts.as_view())
 ]
